@@ -1,4 +1,4 @@
-class TLImageViewer {
+interface TLImageViewer {
     root: HTMLElement
     items: NodeListOf<HTMLImageElement>|null
     itemsLength: number
