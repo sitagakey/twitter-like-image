@@ -187,6 +187,15 @@
             border: 2px solid transparent;
         }
 
+        &::after {
+            content: "";
+            display: block;
+            width: 8px;
+            height: 8px;
+            position: absolute;
+            top: calc(50% - 5px);
+        }
+
         &:hover {
             &::before {
                 background: rgba(255, 255, 255, 0.1);
@@ -208,10 +217,24 @@
 
     .TLImageViewerDetail-prev {
         left: 0;
-    }
 
+        &::after {
+            border-left: 2px solid rgba(255, 255, 255, 0.6);
+            border-top: 2px solid rgba(255, 255, 255, 0.6);
+            transform: rotate(-45deg);
+            right: calc(50% - 6px);
+        }
+    }
+    
     .TLImageViewerDetail-next {
         right: 0;
+        
+        &::after {
+            border-top: 2px solid rgba(255, 255, 255, 0.6);
+            border-right: 2px solid rgba(255, 255, 255, 0.6);
+            transform: rotate(45deg);
+            left: calc(50% - 6px);
+        }
     }
 
     .TLImageViewerDetail-close {
@@ -237,6 +260,26 @@
             left: -1px;
             top: -1px;
             overflow: hidden;
+        }
+
+        &::before,
+        &::after {
+            content: "";
+            display: block;
+            width: 16px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            position: absolute;
+            top: calc(50% - 1px);
+            left: calc(50% - 8px);
+        }
+
+        &::before {
+            transform: rotate(45deg);
+        }
+
+        &::after {
+            transform: rotate(-45deg);
         }
 
         &:hover {

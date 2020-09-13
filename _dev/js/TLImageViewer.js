@@ -5,11 +5,6 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
             r[k] = a[j];
     return r;
 };
-var TLImageViewer = /** @class */ (function () {
-    function TLImageViewer() {
-    }
-    return TLImageViewer;
-}());
 (function () {
     var utils = {
         getIndex: function (el) {
@@ -143,7 +138,7 @@ var TLImageViewer = /** @class */ (function () {
             this.root.dataset.item = String(itemsLength);
             this.detail.setItems(this.items);
             if (notExistItems) {
-                console.error('Probably the wrong construction.\nCorrect construction is "* > * > img"');
+                console.error('Probably the wrong construction.\nCorrect construction is "* > img"');
             }
         };
         /**

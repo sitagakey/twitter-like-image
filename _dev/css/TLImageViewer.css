@@ -152,6 +152,15 @@
   transition: 0.3s;
   border: 2px solid transparent;
 }
+.TLImageViewerDetail .TLImageViewerDetail-next::after,
+.TLImageViewerDetail .TLImageViewerDetail-prev::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  top: calc(50% - 5px);
+}
 .TLImageViewerDetail .TLImageViewerDetail-next:hover::before,
 .TLImageViewerDetail .TLImageViewerDetail-prev:hover::before {
   background: rgba(255, 255, 255, 0.1);
@@ -171,8 +180,20 @@
 .TLImageViewerDetail .TLImageViewerDetail-prev {
   left: 0;
 }
+.TLImageViewerDetail .TLImageViewerDetail-prev::after {
+  border-left: 2px solid rgba(255, 255, 255, 0.6);
+  border-top: 2px solid rgba(255, 255, 255, 0.6);
+  transform: rotate(-45deg);
+  right: calc(50% - 6px);
+}
 .TLImageViewerDetail .TLImageViewerDetail-next {
   right: 0;
+}
+.TLImageViewerDetail .TLImageViewerDetail-next::after {
+  border-top: 2px solid rgba(255, 255, 255, 0.6);
+  border-right: 2px solid rgba(255, 255, 255, 0.6);
+  transform: rotate(45deg);
+  left: calc(50% - 6px);
 }
 .TLImageViewerDetail .TLImageViewerDetail-close {
   display: block;
@@ -197,6 +218,22 @@
   left: -1px;
   top: -1px;
   overflow: hidden;
+}
+.TLImageViewerDetail .TLImageViewerDetail-close::before, .TLImageViewerDetail .TLImageViewerDetail-close::after {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.6);
+  position: absolute;
+  top: calc(50% - 1px);
+  left: calc(50% - 8px);
+}
+.TLImageViewerDetail .TLImageViewerDetail-close::before {
+  transform: rotate(45deg);
+}
+.TLImageViewerDetail .TLImageViewerDetail-close::after {
+  transform: rotate(-45deg);
 }
 .TLImageViewerDetail .TLImageViewerDetail-close:hover {
   background: rgba(255, 255, 255, 0.1);

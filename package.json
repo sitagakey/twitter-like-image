@@ -1,6 +1,6 @@
 {
   "name": "twitter-like-image-viewer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Twitter風の画像ビューアー",
   "main": "index.js",
   "scripts": {
