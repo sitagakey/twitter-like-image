@@ -36,9 +36,6 @@ interface TLImageViewerDetail {
     switchMoveBtns: Function
     setTransitionendClass: Function
 }
-interface Window {
-    TLImageViewer: object;
-}
 
 (() => {
     const utils = {
