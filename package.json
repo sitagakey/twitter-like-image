@@ -1,24 +1,41 @@
 {
   "name": "twitter-like-image-viewer",
-  "version": "1.0.2",
-  "description": "Twitter風の画像ビューアー",
-  "main": "index.js",
+  "version": "1.0.0",
+  "description": "Twitter like image viewer",
+  "main": "dist/twitterLikeImageViewer",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "ts": "tsc",
-    "ts:w": "tsc -w",
-    "scss": "sass ./_dev/scss/TLImageViewer.scss ./_dev/css/TLImageViewer.css --no-source-map",
-    "scss:w": "sass ./_dev/scss/TLImageViewer.scss ./_dev/css/TLImageViewer.css --no-source-map --watch",
-    "dev": "run-p ts:w scss:w",
-    "move": "node move.js",
-    "build": "run-s ts scss move"
+    "build": "NODE_ENV=production webpack",
+    "dev": "NODE_ENV=development webpack -w",
+    "test": "jest",
+    "git-add": "git add .",
+    "pre-commit": "npm-run-all -s test build git-add",
+    "prepare": "husky install"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hikiroom/twitter-like-image-viewer.git"
+  },
+  "keywords": [
+    "TypeScript",
+    "Web Components",
+    "Image",
+    "Twitter"
+  ],
+  "author": "hikikomori",
+  "license": "MIT",
   "devDependencies": {
-    "minify": "^5.1.1",
+    "@types/jest": "^26.0.23",
+    "csstype": "^3.0.8",
+    "husky": "^6.0.0",
+    "jest": "^26.6.3",
     "npm-run-all": "^4.1.5",
-    "sass": "^1.26.7",
-    "typescript": "^3.9.3"
+    "ts-jest": "^26.5.6",
+    "ts-loader": "^9.1.2",
+    "typescript": "^4.2.4",
+    "webpack": "^5.36.2",
+    "webpack-cli": "^4.7.0"
   }
 }
