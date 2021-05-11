@@ -39,3 +39,29 @@ export const lowerCamelCaseToKebabCase = (string: string): string => {
         return `-${targetString.charAt(0).toLowerCase()}`;
     })
 };
+/**
+ * 任意のHTMLElementを生成する
+ * @param tagName
+ * @param attrObject
+ * @param [children[]]
+ * @returns 
+ */
+export const createElement = <T extends HTMLElement> (
+    tagName:string,
+    attrObject: {[key: string]: string},
+    children?: HTMLElement[]
+): T => {
+    const el = document.createElement(tagName) as T;
+
+    for (const [key, value] of Object.entries(attrObject)) {
+        el.setAttribute(key, value);
+    }
+
+    if (children && children.length > 0) {
+        children.forEach((element) => {
+            el.append(element);
+        });
+    }
+
+    return el;
+};

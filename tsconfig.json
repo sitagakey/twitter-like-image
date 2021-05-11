@@ -1,6 +1,6 @@
 {
   "files": [
-    "./src/ts/twitterLikeImageViewer.ts"
+    "src/ts/twitterLikeImage.ts"
   ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */

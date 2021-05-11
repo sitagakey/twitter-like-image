@@ -2,11 +2,11 @@ const env = process.env.NODE_ENV;
 const entry = ((_env) => {
     switch (env) {
         case 'production':
-            return {'dist/twitterLikeImageViewer': './src/ts/twitterLikeImageViewer.ts'};
+            return {'dist/twitterLikeImage': './src/ts/twitterLikeImage.ts'};
         case 'development':
-            return {'sample/twitterLikeImageViewer': './src/ts/twitterLikeImageViewer.ts'};
+            return {'sample/twitterLikeImage': './src/ts/twitterLikeImage.ts'};
         default:
-            return {'sample/twitterLikeImageViewer': './src/ts/twitterLikeImageViewer.ts'};
+            return {'sample/twitterLikeImage': './src/ts/twitterLikeImage.ts'};
     }
 })(env);
 
@@ -18,7 +18,7 @@ module.exports = {
         path: __dirname,
         globalObject: 'this',
         library: {
-            name: 'TwitterLikeImageViewer',
+            name: 'TwitterLikeImage',
             type: 'umd',
             export: 'default',
         },

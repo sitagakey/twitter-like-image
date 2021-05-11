@@ -5,17 +5,17 @@ export type StyleObject = {
 };
 
 export const style: StyleObject = {
-    '.twitter-like-image-viewer': {
+    '.twitter-like-image': {
         width: '100%',
         borderRadius: '20px',
         position: 'relative',
         overflow: 'hidden',
     },
-    '.twitter-like-image-viewer.is-transitionend .backdrop-content': {
+    '.twitter-like-image.is-transitionend .backdrop-content': {
         transition: '0.4s cubic-bezier(0.33, 0.98, 0.77, 0.98)',
     },
-    '.twitter-like-image-viewer::before': {
-        content: '',
+    '.twitter-like-image::before': {
+        content: "''",
         display: 'block',
         width: '100%',
         paddingTop: '50%',
@@ -90,13 +90,15 @@ export const style: StyleObject = {
         height: '100%',
         overflow: 'hidden',
         background: 'rgba(0, 0, 0, 0.7)',
-        /* opacity: '0',
-        visibility: 'hidden', */
         transition: 'opacity 0.2s, visibility 0.2s',
         position: 'fixed',
         top: '0',
         left: '0',
         zIndex: 100,
+    },
+    '.backdrop.is-hide': {
+        opacity: '0',
+        visibility: 'hidden',
     },
     '.backdrop-content': {
         display: 'flex',
@@ -157,7 +159,7 @@ export const style: StyleObject = {
         background: 'rgba(255, 255, 255, 0.1)',
     },
     '.backdrop-next::before,.backdrop-prev::before': {
-        content: '',
+        content: "''",
         display: 'block',
         width: '38px',
         height: '38px',
@@ -167,7 +169,7 @@ export const style: StyleObject = {
         border: '2px solid transparent',
     },
     '.backdrop-next::after,.backdrop-prev::after': {
-        content: '',
+        content: "''",
         display: 'block',
         width: '8px',
         height: '8px',
@@ -213,7 +215,7 @@ export const style: StyleObject = {
         border: '2px solid rgba(255, 255, 255, 0.4)',
     },
     '.backdrop-close::before,.backdrop-close::after': {
-        content: '',
+        content: "''",
         display: 'block',
         width: '16px',
         height: '2px',
