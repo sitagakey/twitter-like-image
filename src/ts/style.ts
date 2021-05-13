@@ -11,9 +11,6 @@ export const style: StyleObject = {
         position: 'relative',
         overflow: 'hidden',
     },
-    '.twitter-like-image.is-transitionend .backdrop-content': {
-        transition: '0.4s cubic-bezier(0.33, 0.98, 0.77, 0.98)',
-    },
     '.twitter-like-image::before': {
         content: "''",
         display: 'block',
@@ -79,6 +76,14 @@ export const style: StyleObject = {
         gridColumn: '2/3',
         gridRow: '2/3',
     },
+    '.item button': {
+        display: 'block',
+        border: '0',
+        padding: '0',
+        background: 'transparent',
+        width: '100%',
+        height: '100%',
+    },
     '.item img': {
         width: '100%',
         height: '100%',
@@ -86,6 +91,9 @@ export const style: StyleObject = {
         objectFit: 'cover',
     },
     '.backdrop': {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         width: '100%',
         height: '100%',
         overflow: 'hidden',
@@ -103,11 +111,13 @@ export const style: StyleObject = {
     '.backdrop-content': {
         display: 'flex',
         alignItems: 'center',
-        height: '100%',
         width: '100%',
         listStyle: 'none',
         margin: '0',
         padding: '0',
+    },
+    '.backdrop-content.is-animation': {
+        transition: '0.4s cubic-bezier(0.33, 0.98, 0.77, 0.98)',
     },
     '.backdrop-item': {
         display: 'flex',
@@ -147,7 +157,7 @@ export const style: StyleObject = {
         overflow: 'hidden',
     },
     '.backdrop-next.is-hide,.backdrop-prev.is-hide': {
-        display: 'block',
+        display: 'none',
     },
     '.backdrop-next:focus,.backdrop-prev:focus': {
         outline: 'none',

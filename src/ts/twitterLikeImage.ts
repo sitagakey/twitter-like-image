@@ -3,6 +3,8 @@ import {
     styleObjectToStyleString,
     styleStringToStyleElement,
     createElement,
+    windowLock,
+    windowUnLock,
 } from './utils';
 
 class TwitterLikeImage extends HTMLElement {
@@ -18,6 +20,7 @@ class TwitterLikeImage extends HTMLElement {
     srcArr: string[] = [];
     altArr: string[] = [];
     activeItemIdx: number = -1;
+    lockPoint: number = 0;
 
     constructor() {
         super();
@@ -42,7 +45,7 @@ class TwitterLikeImage extends HTMLElement {
         template.innerHTML = `
             <div class="twitter-like-image">
             <ul class="content"></ul>
-            <div class="backdrop">
+            <div class="backdrop" tabindex="-1">
             <ul class="backdrop-content"></ul>
             <p class="backdrop-caption"></p>
             <button class="backdrop-prev" aria-label="previous"></button>
@@ -94,8 +97,9 @@ class TwitterLikeImage extends HTMLElement {
 
         srcArr.forEach((src, i) => {
             const contentImg = createElement<HTMLImageElement>('img', { src, alt: altArr[i] ?? '' });
-            const item = createElement<HTMLLIElement>('li', { class: 'item' }, [contentImg]);
-            item.addEventListener('click', this.openBackDrop.bind(this, i));
+            const button = createElement<HTMLButtonElement>('button', { type: 'button', 'aria-label': `画像を拡大表示する` }, [contentImg]);
+            const item = createElement<HTMLLIElement>('li', { class: 'item' }, [button]);
+            button.addEventListener('click', this.openBackDrop.bind(this, i));
             content.append(item);
 
             const backdropImg = createElement<HTMLImageElement>('img', { src, alt: altArr[i] ?? '' });
@@ -104,14 +108,30 @@ class TwitterLikeImage extends HTMLElement {
         });
     }
     setEventOfBackdropElements() {
-        const { backdrop, backdropPrev, backdropNext, backdropClose, activeItemIdx } = this;
+        const { backdrop, backdropPrev, backdropNext, backdropClose } = this;
         if (!backdrop || !backdropPrev || !backdropNext || !backdropClose) {
             throw new Error('');
         }
 
-        backdropPrev.addEventListener('click', this.switchTargetImage.bind(this, activeItemIdx + 1));
-        backdropNext.addEventListener('click', this.switchTargetImage.bind(this, activeItemIdx - 1));
+        backdrop.addEventListener('transitionend', this.readyBackdropContent.bind(this))
+        backdrop.addEventListener('click', this.closeBackDropIfMe.bind(this))
+        backdropPrev.addEventListener('click', this.switchTargetImageToPrevious.bind(this));
+        backdropNext.addEventListener('click', this.switchTargetImageToNext.bind(this));
         backdropClose.addEventListener('click', this.closeBackDrop.bind(this));
+    }
+    readyBackdropContent(e: TransitionEvent) {
+        const { backdropContent } = this;
+        if (!backdropContent) {
+            throw new Error('Either content or backdrop-content does not exist.')
+        }
+
+        if (e.target === e.currentTarget && e.propertyName === 'opacity') {
+            if (backdropContent.classList.contains('is-animation')) {
+                backdropContent.classList.remove('is-animation');
+            } else {
+                backdropContent.classList.add('is-animation');
+            }
+        }
     }
     /**
      * hostの属性を取得し、配列として返す
@@ -129,28 +149,69 @@ class TwitterLikeImage extends HTMLElement {
     openBackDrop(itemIdx: number) {
         const { backdrop } = this;
         if (!backdrop) {
-            throw new Error('')
+            throw new Error('');
         }
 
-        this.activeItemIdx = itemIdx;
+        this.switchTargetImageTo(itemIdx);
         backdrop.classList.remove('is-hide');
-        this.setCaption(this.altArr[itemIdx]);
-    }
-    switchTargetImage() {
-
+        this.lockPoint = window.pageYOffset;
+        windowLock();
     }
     closeBackDrop() {
         const { backdrop } = this;
         if (!backdrop) {
-            throw new Error('')
+            throw new Error('');
         }
+
+        this.switchTargetImageTo(-1);
         backdrop.classList.add('is-hide');
-        this.activeItemIdx = -1;
+        windowUnLock(this.lockPoint);
+        this.lockPoint = 0;
+    }
+    closeBackDropIfMe(e: MouseEvent) {
+        if (e.target === e.currentTarget) {
+            this.closeBackDrop()
+        }
+    }
+    switchTargetImageTo(itemIdx: number) {
+        this.activeItemIdx = itemIdx;
+        this.translateTo(itemIdx);
+        this.changeStateOfBackdropPrevBtn(itemIdx === 0);
+        this.changeStateOfBackdropNextBtn(itemIdx >= this.srcArr.length - 1);
+        this.setCaption(this.altArr[itemIdx] ?? '');
+    }
+    switchTargetImageToPrevious() {
+        this.switchTargetImageTo(this.activeItemIdx - 1);
+    }
+    switchTargetImageToNext() {
+        this.switchTargetImageTo(this.activeItemIdx + 1);
+    }
+    changeStateOfBackdropPrevBtn(boolean: boolean) {
+        if (boolean) {
+            this.backdropPrev?.classList.add('is-hide');
+        } else {
+            this.backdropPrev?.classList.remove('is-hide');
+        }
+    }
+    changeStateOfBackdropNextBtn(boolean: boolean) {
+        if (boolean) {
+            this.backdropNext?.classList.add('is-hide');
+        } else {
+            this.backdropNext?.classList.remove('is-hide');
+        }
+    }
+    translateTo(itemIdx: number) {
+        const { backdropContent } = this;
+        if (!backdropContent) {
+            throw new Error('');
+        }
+
+        backdropContent.style.transform = `translateX(-${itemIdx * 100}%)`;
     }
     setCaption(caption: string) {
         const { backdropCaption } = this;
         if (!backdropCaption) {
-            throw new Error('')
+            throw new Error('');
         }
 
         backdropCaption.innerText = caption;
