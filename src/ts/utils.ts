@@ -1,11 +1,6 @@
 import { StyleObject } from './style';
 
 /**
- * フォーカス可能な要素のセレクタ文字列
- */
-export const FOCUSABLE_ELEMENTS =
-    'button:not(.is-hide), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
-/**
  * styleObjectを元に、styleStringを生成する
  * @param styleObject
  */
@@ -71,7 +66,19 @@ export const createElement = <T extends HTMLElement> (
     return el;
 };
 /**
- * body要素に対してis-fixedクラスを付与し、現在のスクロール値をtopプロパティに設定する
+ * 文字列で表された配列を通常の配列として返す
+ * @param attrName
+ */
+export const getAttrStrArr = (element: Element, attrName :string) => {
+    const attrArr = element.getAttribute(attrName)?.replace(/\s/g, '').split(',');
+    if (!attrArr || attrArr.length < 1 || attrArr.length > 4) {
+        throw new Error(`Something is wrong of ${attrName} attribute.`)
+    }
+
+    return attrArr;
+};
+/**
+ * body要素を現在のスクロール値で固定する
  */
 export const windowLock = () => {
     const doc = document.body;
@@ -82,42 +89,55 @@ export const windowLock = () => {
     doc.style.top = `-${scrollHeight}px`;
 };
 /**
- * body要素のis-fixedクラスを削除し、topプロパティを初期化する
+ * body要素の固定を解く
  */
-export const windowUnLock = (scrollY: number) => {
+export const windowUnLock = () => {
     const doc = document.body;
+    const top = doc.style.top ? Math.abs(parseInt(doc.style.top, 10)) : 0;
 
     doc.style.width = '';
     doc.style.position = '';
     doc.style.top = '';
-    window.scrollTo(0, scrollY);
+    window.scrollTo(0, top);
 };
+/**
+ * フォーカス可能な要素のセレクタ文字列
+ */
+export const FOCUSABLE_ELEMENTS = 'button:not(.is-hide), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 /**
  * フォーカス管理クラス
  */
-export class LockAt {
+export class LookAt {
     wrapperElement: HTMLElement;
     focusableElements: NodeListOf<HTMLElement>;
     firstElement: HTMLElement;
     lastElement: HTMLElement;
+    mutationObserver: MutationObserver;
     private loopEvent: (e: KeyboardEvent) => void = this.focusLoop.bind(this);
 
     constructor(wrapperElement: HTMLElement) {
         this.wrapperElement = wrapperElement;
-        this.focusableElements = wrapperElement.querySelectorAll(
-            FOCUSABLE_ELEMENTS
-        );
+        this.mutationObserver = new MutationObserver(this.reset.bind(this));
+        this.focusableElements = this.wrapperElement.querySelectorAll(FOCUSABLE_ELEMENTS);
         this.firstElement = this.focusableElements[0];
-        this.lastElement = this.focusableElements[
-            this.focusableElements.length - 1
-        ];
-
-        this.addEvents();
+        this.lastElement = this.focusableElements[this.focusableElements.length - 1];
+        this.focusableElements.forEach((item) => {
+            this.mutationObserver.observe(item, {
+                attributes: true,
+            });
+        });
     }
-
+    /**
+     * 各種要素とイベントを設定しなおす
+     */
+    reset() {
+        this.resetEvents();
+        this.resetFocusableElements();
+    }
+    /**
+     * 各種要素を設定しなおす
+     */
     resetFocusableElements() {
-        this.removeEvents();
-
         this.focusableElements = this.wrapperElement.querySelectorAll(
             FOCUSABLE_ELEMENTS
         );
@@ -125,10 +145,14 @@ export class LockAt {
         this.lastElement = this.focusableElements[
             this.focusableElements.length - 1
         ];
-
+    }
+    /**
+     * イベントを設定しなおす
+     */
+    resetEvents() {
+        this.removeEvents();
         this.addEvents();
     }
-
     /**
      * 対象要素にイベントハンドラを追加する
      */
@@ -136,7 +160,6 @@ export class LockAt {
         this.firstElement.addEventListener('keydown', this.loopEvent);
         this.lastElement.addEventListener('keydown', this.loopEvent);
     }
-
     /**
      * 対象要素のイベントハンドラを削除する
      */
@@ -144,7 +167,6 @@ export class LockAt {
         this.firstElement.removeEventListener('keydown', this.loopEvent);
         this.lastElement.removeEventListener('keydown', this.loopEvent);
     }
-
     /**
      * 対象要素間でフォーカスをループさせる
      */

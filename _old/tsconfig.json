@@ -1,8 +1,0 @@
-{
-    "compilerOptions": {
-      "rootDir": "./_dev/ts/",
-      "outDir": "./_dev/js/",
-      "lib": ["es6", "dom"],
-      "target": "es5"
-    }
-}

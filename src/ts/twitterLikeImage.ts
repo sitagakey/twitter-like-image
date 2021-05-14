@@ -3,8 +3,10 @@ import {
     styleObjectToStyleString,
     styleStringToStyleElement,
     createElement,
+    getAttrStrArr,
     windowLock,
     windowUnLock,
+    LookAt,
 } from './utils';
 
 class TwitterLikeImage extends HTMLElement {
@@ -16,11 +18,12 @@ class TwitterLikeImage extends HTMLElement {
     backdropPrev: HTMLElement|null = null;
     backdropNext: HTMLElement|null = null;
     backdropClose: HTMLElement|null = null;
-    items: NodeListOf<HTMLImageElement>|null = null;
+    item: HTMLLIElement[]|null = null;
+    backdropContentItem: HTMLLIElement[]|null = null;
     srcArr: string[] = [];
     altArr: string[] = [];
     activeItemIdx: number = -1;
-    lockPoint: number = 0;
+    lookAt: LookAt|null = null;
 
     constructor() {
         super();
@@ -33,8 +36,8 @@ class TwitterLikeImage extends HTMLElement {
             this.init = true;
             this.setElementsToThis();
             this.appendItemElements();
-            this.setEventOfBackdropElements();
-            this.closeBackDrop();
+            this.setEventListener();
+            this.closeBackdrop();
         }
     }
     /**
@@ -63,17 +66,22 @@ class TwitterLikeImage extends HTMLElement {
      * 各種要素をthisに格納する
      */
     setElementsToThis() {
-        const srcArr = this.getHostAttrArr('src');
-        const altArr = this.getHostAttrArr('alt');
-        const content = this.shadowRoot?.querySelector<HTMLElement>('.content');
-        const backdrop = this.shadowRoot?.querySelector<HTMLElement>('.backdrop');
-        const backdropContent = this.shadowRoot?.querySelector<HTMLElement>('.backdrop-content');
-        const backdropCaption = this.shadowRoot?.querySelector<HTMLElement>('.backdrop-caption');
-        const backdropPrev = this.shadowRoot?.querySelector<HTMLElement>('.backdrop-prev');
-        const backdropNext = this.shadowRoot?.querySelector<HTMLElement>('.backdrop-next');
-        const backdropClose = this.shadowRoot?.querySelector<HTMLElement>('.backdrop-close');
+        const { shadowRoot } = this;
+        if (!shadowRoot) {
+            throw new Error('shadowRoot is not found.');
+        }
+
+        const srcArr = getAttrStrArr(shadowRoot.host, 'src');
+        const altArr = getAttrStrArr(shadowRoot.host, 'alt');
+        const content = shadowRoot.querySelector<HTMLElement>('.content');
+        const backdrop = shadowRoot.querySelector<HTMLElement>('.backdrop');
+        const backdropContent = shadowRoot.querySelector<HTMLElement>('.backdrop-content');
+        const backdropCaption = shadowRoot.querySelector<HTMLElement>('.backdrop-caption');
+        const backdropPrev = shadowRoot.querySelector<HTMLElement>('.backdrop-prev');
+        const backdropNext = shadowRoot.querySelector<HTMLElement>('.backdrop-next');
+        const backdropClose = shadowRoot.querySelector<HTMLElement>('.backdrop-close');
         if (!backdrop || !content || !backdropContent || !backdropCaption || !backdropPrev || !backdropNext || !backdropClose) {
-            throw new Error('structure elements do not exist.')
+            throw new Error('structure elements are wrong.')
         }
 
         this.altArr = altArr;
@@ -85,44 +93,64 @@ class TwitterLikeImage extends HTMLElement {
         this.backdropPrev = backdropPrev;
         this.backdropNext = backdropNext;
         this.backdropClose = backdropClose;
+        this.item = srcArr.map((src, i) => {
+            const contentImg = createElement<HTMLImageElement>('img', { src, alt: altArr[i] ?? '' });
+            const button = createElement<HTMLButtonElement>('button', { type: 'button', 'aria-label': `画像を拡大表示する` }, [contentImg]);
+            const item = createElement<HTMLLIElement>('li', { class: 'item' }, [button]);
+
+            return item;
+        });
+        this.backdropContentItem = srcArr.map((src, i) => {
+            const backdropImg = createElement<HTMLImageElement>('img', { src, alt: altArr[i] ?? '' });
+            const backdropContentItem = createElement<HTMLLIElement>('li', { class: 'backdrop-item' }, [backdropImg]);
+
+            return backdropContentItem;
+        });
+        this.lookAt = new LookAt(backdrop);
     }
     /**
      * item要素をcontent（backdrop含む）要素に追加する
      */
     appendItemElements() {
-        const { content, backdropContent, srcArr, altArr } = this;
-        if (!content || !backdropContent) {
+        const { content, backdropContent, item, backdropContentItem } = this;
+        if (!content || !backdropContent || !item || !backdropContentItem) {
             throw new Error('Either content or backdrop-content does not exist.')
         }
 
-        srcArr.forEach((src, i) => {
-            const contentImg = createElement<HTMLImageElement>('img', { src, alt: altArr[i] ?? '' });
-            const button = createElement<HTMLButtonElement>('button', { type: 'button', 'aria-label': `画像を拡大表示する` }, [contentImg]);
-            const item = createElement<HTMLLIElement>('li', { class: 'item' }, [button]);
-            button.addEventListener('click', this.openBackDrop.bind(this, i));
-            content.append(item);
-
-            const backdropImg = createElement<HTMLImageElement>('img', { src, alt: altArr[i] ?? '' });
-            const backdropContentItem = createElement<HTMLLIElement>('li', { class: 'backdrop-item' }, [backdropImg]);
-            backdropContent.append(backdropContentItem);
-        });
+        content.append(...item);
+        backdropContent.append(...backdropContentItem);
     }
-    setEventOfBackdropElements() {
-        const { backdrop, backdropPrev, backdropNext, backdropClose } = this;
-        if (!backdrop || !backdropPrev || !backdropNext || !backdropClose) {
-            throw new Error('');
+    /**
+     * 各種要素にイベントを設定する
+     */
+    setEventListener() {
+        const { backdrop, backdropPrev, backdropNext, backdropClose, item } = this;
+        if (!backdrop || !backdropPrev || !backdropNext || !backdropClose || !item) {
+            throw new Error('Either backdrop or backdropPrev or backdropNext or backdropClose or item are wrong.');
         }
 
+        item.forEach((_item, i) => {
+            const button = _item.querySelector('button');
+            if (!button) {
+                throw new Error('button is wrong.');
+            }
+
+            button.addEventListener('click', this.openBackdrop.bind(this, i));
+        });
         backdrop.addEventListener('transitionend', this.readyBackdropContent.bind(this))
-        backdrop.addEventListener('click', this.closeBackDropIfMe.bind(this))
+        backdrop.addEventListener('click', this.closeBackdropIfMe.bind(this))
         backdropPrev.addEventListener('click', this.switchTargetImageToPrevious.bind(this));
         backdropNext.addEventListener('click', this.switchTargetImageToNext.bind(this));
-        backdropClose.addEventListener('click', this.closeBackDrop.bind(this));
+        backdropClose.addEventListener('click', this.closeBackdrop.bind(this));
     }
+    /**
+     * backdropContentのアニメーション準備ができたら実行される処理
+     * @param e
+     */
     readyBackdropContent(e: TransitionEvent) {
         const { backdropContent } = this;
         if (!backdropContent) {
-            throw new Error('Either content or backdrop-content does not exist.')
+            throw new Error('Either content or backdrop-content are wrong.');
         }
 
         if (e.target === e.currentTarget && e.propertyName === 'opacity') {
@@ -130,88 +158,150 @@ class TwitterLikeImage extends HTMLElement {
                 backdropContent.classList.remove('is-animation');
             } else {
                 backdropContent.classList.add('is-animation');
+                this.focusBackdropBtnAssociatedWithActiveItemIdx();
             }
         }
     }
     /**
-     * hostの属性を取得し、配列として返す
-     * @param attrName
+     * itemIdxに対応したitemButtonにフォーカスする
+     * @param itemIdx
      */
-    getHostAttrArr(attrName :string) {
-        const attrArr = this.shadowRoot?.host.getAttribute(attrName)?.replace(/\s/g, '').split(',');
-
-        if (!attrArr || attrArr.length < 1 || attrArr.length > 4) {
-            throw new Error(`Something is wrong of ${attrName} attribute.`)
+    focusItemButton(itemIdx: number) {
+        const { item } = this;
+        if (!item) {
+            throw new Error('item is wrong.')
         }
 
-        return attrArr;
+        item[itemIdx]?.querySelector('button')?.focus();
     }
-    openBackDrop(itemIdx: number) {
+    /**
+     * activeItemIdxに関連したbackdropBtnにフォーカスする
+     */
+    focusBackdropBtnAssociatedWithActiveItemIdx() {
+        const { backdropPrev, backdropNext } = this;
+        if (!backdropPrev || !backdropNext) {
+            throw new Error('Either backdropPrev or backdropNext are wrong.');
+        }
+
+        if (this.activeItemIdx === this.srcArr.length - 1) {
+            backdropPrev.focus();
+        } else {
+            backdropNext.focus();
+        }
+    }
+    /**
+     * backdropを開く
+     * @param itemIdx
+     */
+    openBackdrop(itemIdx: number) {
         const { backdrop } = this;
         if (!backdrop) {
-            throw new Error('');
+            throw new Error('backdrop is wrong.');
         }
 
+        windowLock();
         this.switchTargetImageTo(itemIdx);
         backdrop.classList.remove('is-hide');
-        this.lockPoint = window.pageYOffset;
-        windowLock();
     }
-    closeBackDrop() {
+    /**
+     * backdropを閉じる
+     * @param e
+     */
+    closeBackdrop() {
         const { backdrop } = this;
         if (!backdrop) {
-            throw new Error('');
+            throw new Error('backdrop is wrong.');
         }
 
+        windowUnLock();
+        this.focusItemButton(this.activeItemIdx);
         this.switchTargetImageTo(-1);
         backdrop.classList.add('is-hide');
-        windowUnLock(this.lockPoint);
-        this.lockPoint = 0;
     }
-    closeBackDropIfMe(e: MouseEvent) {
+    /**
+     * MouseEventの発生源がcurrentTargetの場合、backdropを閉じる
+     * @param e
+     */
+    closeBackdropIfMe(e: MouseEvent) {
         if (e.target === e.currentTarget) {
-            this.closeBackDrop()
+            this.closeBackdrop()
         }
     }
+    /**
+     * itemIdxに対応したitemをtargetとして各種処理を与える
+     * @param itemIdx
+     */
     switchTargetImageTo(itemIdx: number) {
         this.activeItemIdx = itemIdx;
         this.translateTo(itemIdx);
-        this.changeStateOfBackdropPrevBtn(itemIdx === 0);
-        this.changeStateOfBackdropNextBtn(itemIdx >= this.srcArr.length - 1);
+        this.changeStateOfBackdropPrevBtn(itemIdx === 0, this.focusBackdropBtnAssociatedWithActiveItemIdx.bind(this));
+        this.changeStateOfBackdropNextBtn(itemIdx === this.srcArr.length - 1, this.focusBackdropBtnAssociatedWithActiveItemIdx.bind(this));
         this.setCaption(this.altArr[itemIdx] ?? '');
     }
+    /**
+     * activeItemIdx-1に対応したitemをtargetとして各種処理を与える
+     */
     switchTargetImageToPrevious() {
         this.switchTargetImageTo(this.activeItemIdx - 1);
     }
+    /**
+     * activeItemIdx+1に対応したitemをtargetとして各種処理を与える
+     */
     switchTargetImageToNext() {
         this.switchTargetImageTo(this.activeItemIdx + 1);
     }
-    changeStateOfBackdropPrevBtn(boolean: boolean) {
+    /**
+     * backdropPrevBtnの表示状態を変更する
+     * @param boolean 
+     * @param trueCallback 
+     */
+    changeStateOfBackdropPrevBtn(boolean: boolean, trueCallback: () => void) {
         if (boolean) {
             this.backdropPrev?.classList.add('is-hide');
-        } else {
+
+            if (trueCallback) {
+                trueCallback();
+            }
+        } else if (!boolean && this.backdropPrev?.classList.contains('is-hide')) {
             this.backdropPrev?.classList.remove('is-hide');
         }
     }
-    changeStateOfBackdropNextBtn(boolean: boolean) {
+    /**
+     * backdropNextBtnの表示状態を変更する
+     * @param boolean 
+     * @param trueCallback 
+     */
+    changeStateOfBackdropNextBtn(boolean: boolean, trueCallback: () => void) {
         if (boolean) {
             this.backdropNext?.classList.add('is-hide');
-        } else {
+
+            if (trueCallback) {
+                trueCallback();
+            }
+        } else if (!boolean && this.backdropNext?.classList.contains('is-hide')) {
             this.backdropNext?.classList.remove('is-hide');
         }
     }
+    /**
+     * itemIdxに対応したitemを画面上に表示させる
+     * @param itemIdx
+     */
     translateTo(itemIdx: number) {
         const { backdropContent } = this;
         if (!backdropContent) {
-            throw new Error('');
+            throw new Error('backdropContent is wrong.');
         }
 
         backdropContent.style.transform = `translateX(-${itemIdx * 100}%)`;
     }
+    /**
+     * キャプションを設定する
+     * @param caption
+     */
     setCaption(caption: string) {
         const { backdropCaption } = this;
         if (!backdropCaption) {
-            throw new Error('');
+            throw new Error('backdropCaption is wrong.');
         }
 
         backdropCaption.innerText = caption;

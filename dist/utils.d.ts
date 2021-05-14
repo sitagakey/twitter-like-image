@@ -1,9 +1,5 @@
 import { StyleObject } from './style';
 /**
- * フォーカス可能な要素のセレクタ文字列
- */
-export declare const FOCUSABLE_ELEMENTS = "button:not(.is-hide), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex=\"-1\"])";
-/**
  * styleObjectを元に、styleStringを生成する
  * @param styleObject
  */
@@ -29,24 +25,45 @@ export declare const createElement: <T extends HTMLElement>(tagName: string, att
     [key: string]: string;
 }, children?: HTMLElement[] | undefined) => T;
 /**
- * body要素に対してis-fixedクラスを付与し、現在のスクロール値をtopプロパティに設定する
+ * 文字列で表された配列を通常の配列として返す
+ * @param attrName
+ */
+export declare const getAttrStrArr: (element: Element, attrName: string) => string[];
+/**
+ * body要素を現在のスクロール値で固定する
  */
 export declare const windowLock: () => void;
 /**
- * body要素のis-fixedクラスを削除し、topプロパティを初期化する
+ * body要素の固定を解く
  */
-export declare const windowUnLock: (scrollY: number) => void;
+export declare const windowUnLock: () => void;
+/**
+ * フォーカス可能な要素のセレクタ文字列
+ */
+export declare const FOCUSABLE_ELEMENTS = "button:not(.is-hide), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex=\"-1\"])";
 /**
  * フォーカス管理クラス
  */
-export declare class LockAt {
+export declare class LookAt {
     wrapperElement: HTMLElement;
     focusableElements: NodeListOf<HTMLElement>;
     firstElement: HTMLElement;
     lastElement: HTMLElement;
+    mutationObserver: MutationObserver;
     private loopEvent;
     constructor(wrapperElement: HTMLElement);
+    /**
+     * 各種要素とイベントを設定しなおす
+     */
+    reset(): void;
+    /**
+     * 各種要素を設定しなおす
+     */
     resetFocusableElements(): void;
+    /**
+     * イベントを設定しなおす
+     */
+    resetEvents(): void;
     /**
      * 対象要素にイベントハンドラを追加する
      */
