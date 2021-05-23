@@ -46,7 +46,7 @@ class TwitterLikeImage extends HTMLElement {
     appendTemplateToShadowDom() {
         const template = document.createElement('template');
         template.innerHTML = `
-            <div class="twitter-like-image">
+            <div class="twitter-like-image" part="container">
             <ul class="content"></ul>
             <div class="backdrop" tabindex="-1">
             <ul class="backdrop-content"></ul>
@@ -68,7 +68,7 @@ class TwitterLikeImage extends HTMLElement {
     setElementsToThis() {
         const { shadowRoot } = this;
         if (!shadowRoot) {
-            throw new Error('shadowRoot is not found.');
+            throw new Error('ShadowRoot is not found.');
         }
 
         const srcArr = getAttrStrArr(shadowRoot.host, 'src');
@@ -81,7 +81,7 @@ class TwitterLikeImage extends HTMLElement {
         const backdropNext = shadowRoot.querySelector<HTMLElement>('.backdrop-next');
         const backdropClose = shadowRoot.querySelector<HTMLElement>('.backdrop-close');
         if (!backdrop || !content || !backdropContent || !backdropCaption || !backdropPrev || !backdropNext || !backdropClose) {
-            throw new Error('structure elements are wrong.')
+            throw new Error('Something in structure element is not exist.')
         }
 
         this.altArr = altArr;
@@ -95,7 +95,7 @@ class TwitterLikeImage extends HTMLElement {
         this.backdropClose = backdropClose;
         this.item = srcArr.map((src, i) => {
             const contentImg = createElement<HTMLImageElement>('img', { src, alt: altArr[i] ?? '' });
-            const button = createElement<HTMLButtonElement>('button', { type: 'button', 'aria-label': `画像を拡大表示する` }, [contentImg]);
+            const button = createElement<HTMLButtonElement>('button', { type: 'button', 'aria-label': `view larger image` }, [contentImg]);
             const item = createElement<HTMLLIElement>('li', { class: 'item' }, [button]);
 
             return item;
@@ -109,12 +109,12 @@ class TwitterLikeImage extends HTMLElement {
         this.lookAt = new LookAt(backdrop);
     }
     /**
-     * item要素をcontent（backdrop含む）要素に追加する
+     * item要素をcontentおよびcontentBackdrop要素に追加する
      */
     appendItemElements() {
         const { content, backdropContent, item, backdropContentItem } = this;
         if (!content || !backdropContent || !item || !backdropContentItem) {
-            throw new Error('Either content or backdrop-content does not exist.')
+            throw new Error('Either content or backdrop-content is not exist.')
         }
 
         content.append(...item);
@@ -126,13 +126,13 @@ class TwitterLikeImage extends HTMLElement {
     setEventListener() {
         const { backdrop, backdropPrev, backdropNext, backdropClose, item } = this;
         if (!backdrop || !backdropPrev || !backdropNext || !backdropClose || !item) {
-            throw new Error('Either backdrop or backdropPrev or backdropNext or backdropClose or item are wrong.');
+            throw new Error('Either backdrop or backdropPrev or backdropNext or backdropClose or item is not exist.');
         }
 
         item.forEach((_item, i) => {
             const button = _item.querySelector('button');
             if (!button) {
-                throw new Error('button is wrong.');
+                throw new Error('button is not exist');
             }
 
             button.addEventListener('click', this.openBackdrop.bind(this, i));
@@ -150,7 +150,7 @@ class TwitterLikeImage extends HTMLElement {
     readyBackdropContent(e: TransitionEvent) {
         const { backdropContent } = this;
         if (!backdropContent) {
-            throw new Error('Either content or backdrop-content are wrong.');
+            throw new Error('Either content or backdrop-content is not exist.');
         }
 
         if (e.target === e.currentTarget && e.propertyName === 'opacity') {
@@ -180,7 +180,7 @@ class TwitterLikeImage extends HTMLElement {
     focusBackdropBtnAssociatedWithActiveItemIdx() {
         const { backdropPrev, backdropNext } = this;
         if (!backdropPrev || !backdropNext) {
-            throw new Error('Either backdropPrev or backdropNext are wrong.');
+            throw new Error('Either backdropPrev or backdropNext is not exist.');
         }
 
         if (this.activeItemIdx === this.srcArr.length - 1) {
@@ -196,7 +196,7 @@ class TwitterLikeImage extends HTMLElement {
     openBackdrop(itemIdx: number) {
         const { backdrop } = this;
         if (!backdrop) {
-            throw new Error('backdrop is wrong.');
+            throw new Error('backdrop is not exist.');
         }
 
         windowLock();
@@ -210,7 +210,7 @@ class TwitterLikeImage extends HTMLElement {
     closeBackdrop() {
         const { backdrop } = this;
         if (!backdrop) {
-            throw new Error('backdrop is wrong.');
+            throw new Error('backdrop is not exist.');
         }
 
         windowUnLock();
@@ -289,7 +289,7 @@ class TwitterLikeImage extends HTMLElement {
     translateTo(itemIdx: number) {
         const { backdropContent } = this;
         if (!backdropContent) {
-            throw new Error('backdropContent is wrong.');
+            throw new Error('backdropContent is not exist.');
         }
 
         backdropContent.style.transform = `translateX(-${itemIdx * 100}%)`;
@@ -301,7 +301,7 @@ class TwitterLikeImage extends HTMLElement {
     setCaption(caption: string) {
         const { backdropCaption } = this;
         if (!backdropCaption) {
-            throw new Error('backdropCaption is wrong.');
+            throw new Error('backdropCaption is not exist.');
         }
 
         backdropCaption.innerText = caption;
