@@ -1,6 +1,6 @@
 # Twitter like image viewer
 
-This is Twitter like image viewer Web components.
+This is Twitter like image viewer Web Components.
 
 ## installation
 

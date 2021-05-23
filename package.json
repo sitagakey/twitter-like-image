@@ -1,6 +1,6 @@
 {
   "name": "twitter-like-image",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Twitter like image viewer",
   "main": "dist/twitterLikeImage",
   "files": [
