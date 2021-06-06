@@ -2,6 +2,8 @@
 
 This is Twitter like image viewer Web Components.
 
+Sample: [https://hikiroom.github.io/twitter-like-image/sample/](https://hikiroom.github.io/twitter-like-image/sample/)
+
 ## installation
 
 ### Script
